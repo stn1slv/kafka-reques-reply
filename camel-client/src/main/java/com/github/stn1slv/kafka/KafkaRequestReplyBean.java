@@ -1,5 +1,6 @@
 package com.github.stn1slv.kafka;
 
+import org.apache.camel.Body;
 import org.apache.camel.Handler;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,22 +12,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class KafkaRequestReplyBean {
-    // @Value("${kafka.request.topic}")
-    // private String requestTopic;
-
-    // @Autowired
-    // public KafkaRequestReplyBean(ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate) {
-    //     this.replyingKafkaTemplate = replyingKafkaTemplate;
-    // }
+    @Value("${kafka.request.topic}")
+    private String requestTopic;
 
     @Autowired
     private ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate;
-    // private final ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate; 
 
-    // @Handler
-    public String call() throws Exception {
-        String inputValue = "test";
-        ProducerRecord<String, String> record = new ProducerRecord<>("kRequests", null, "STD001", inputValue);
+    @Handler
+    public String call(@Body String inputValue) throws Exception {
+        ProducerRecord<String, String> record = new ProducerRecord<>(requestTopic, null, "STD001", inputValue);
         RequestReplyFuture<String, String, String> future = replyingKafkaTemplate.sendAndReceive(record);
         ConsumerRecord<String, String> response = future.get();
         return response.value();

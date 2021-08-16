@@ -12,13 +12,9 @@ import org.springframework.stereotype.Component;
 public class CamelRoutes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
-        restConfiguration().component("servlet").bindingMode(RestBindingMode.json);
-
-        rest().post("/api/uppercase").to("direct:uppercase");
-
-        from("direct:uppercase")
-            .log(LoggingLevel.INFO, "New request: ${body}")//;
-            .bean(new KafkaRequestReplyBean(),"call");
-
+        from("netty-http:http://0.0.0.0:{{listener.port}}/api/uppercase").streamCaching()
+            .log(LoggingLevel.INFO, "Request: ${body}")
+            .bean(KafkaRequestReplyBean.class)
+            .log(LoggingLevel.INFO, "Response: ${body}");
     }
 }
